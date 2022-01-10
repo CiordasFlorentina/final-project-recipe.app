@@ -6,7 +6,8 @@ The app represents the server side of a web cooking platform where users can:
 
 Endpoints detailed at:
 - Swagger: http://localhost:8080/swagger-ui/
-- Documentation document: ./src/main/resources
+- Exported swagger file:  ./src/main/resources
+- Documentation file: ./src/main/resources
 - Postman collection: ./src/main/resources
 
 ### App Usage
