@@ -7,6 +7,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -17,6 +20,8 @@ import java.util.List;
 public class IngredientController {
 
     private final IngredientService ingredientService;
+
+    private static final String INGREDIENT_SERVICE = "IngredientService";
 
     public IngredientController(IngredientService ingredientService) {
         this.ingredientService = ingredientService;
@@ -29,9 +34,15 @@ public class IngredientController {
     }
 
     @GetMapping("/{id}")
+    @CircuitBreaker(name=INGREDIENT_SERVICE, fallbackMethod="ingredientFallback")
     @ApiOperation(value = "Get", notes = "Get specific ingredient by id")
     public Ingredient getIngredient(@PathVariable Long id) {
+        throw new Exception("Exception message"); // Checking CircuitBreaker..
         return ingredientService.getIngredient(id);
+    }
+
+    public String ingredientFallback(Exception e){
+        return String("Server is down");
     }
 
 
