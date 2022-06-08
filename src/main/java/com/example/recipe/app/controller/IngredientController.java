@@ -3,13 +3,14 @@ package com.example.recipe.app.controller;
 import com.example.recipe.app.model.entity.Ingredient;
 import com.example.recipe.app.model.request.IngredientRequest;
 import com.example.recipe.app.service.IngredientService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
 
 import javax.validation.Valid;
 import java.util.List;
@@ -36,13 +37,15 @@ public class IngredientController {
     @GetMapping("/{id}")
     @CircuitBreaker(name=INGREDIENT_SERVICE, fallbackMethod="ingredientFallback")
     @ApiOperation(value = "Get", notes = "Get specific ingredient by id")
-    public Ingredient getIngredient(@PathVariable Long id) {
-        throw new Exception("Exception message"); // Checking CircuitBreaker..
+    public Ingredient getIngredient(@PathVariable Long id) throws Exception {
+        if(true) {
+            throw new Exception("Exception message"); // Checking CircuitBreaker..
+        }
         return ingredientService.getIngredient(id);
     }
 
     public String ingredientFallback(Exception e){
-        return String("Server is down");
+        return new String("Server is down");
     }
 
 
