@@ -61,8 +61,7 @@ public class IngredientController {
     @ApiOperation(value = "Get", notes = "Get specific ingredient by id")
     public ResponseEntity<String> getIngredient(@PathVariable Long id) {
 //        fakeEndpointApiCall();
-        String ingredient_to_string = ingredientService.getIngredient(id).toString();
-        return new ResponseEntity<String>(ingredient_to_string, HttpStatus.OK);
+        return new ResponseEntity<Ingredient>(ingredientService.getIngredient(id), HttpStatus.OK);
     }
 
     @PostMapping()
