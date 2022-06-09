@@ -1,16 +1,15 @@
 package com.example.recipe.app.controller;
 
-import com.example.recipe.app.model.entity.Ingredient;
 import com.example.recipe.app.model.request.IngredientWithQuantity;
 import com.example.recipe.app.model.request.RecipeRequest;
 import com.example.recipe.app.model.response.FullRecipeResponse;
-import com.example.recipe.app.service.IngredientService;
 import com.example.recipe.app.service.RecipeService;
+import com.example.recipe.app.utils.FaultTolerance;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +27,8 @@ public class RecipeController {
 
     private static final String RECIPE_SERVICE = "RecipeService";
 
+    private final FaultTolerance faultTolerance;
+
     @Autowired
     private RestTemplate restTemplate;
 
@@ -37,66 +38,70 @@ public class RecipeController {
         restTemplate.getForObject("http://localhost:8081/recipe", String.class);
     }
 
-    public RecipeController(RecipeService recipeService) {
+    public RecipeController(RecipeService recipeService, FaultTolerance faultTolerance) {
         this.recipeService = recipeService;
+        this.faultTolerance = faultTolerance;
     }
 
     @GetMapping()
     @CircuitBreaker(name=RECIPE_SERVICE, fallbackMethod="recipeFallBack")
+    @Bulkhead(name=RECIPE_SERVICE, fallbackMethod = "recipeBulkHeadFallback")
     @ApiOperation(value = "GetAll", notes = "Get all recipes")
     public ResponseEntity<List<FullRecipeResponse>> getRecipes() {
-//         fakeEndpointApiCall();
+        faultTolerance.fakeEndpointApiCall();
+        faultTolerance.concurrentRequestsApiCall();
         return new ResponseEntity<>(recipeService.getRecipes(), HttpStatus.OK);
 
     }
 
     @GetMapping("/{id}")
     @CircuitBreaker(name=RECIPE_SERVICE, fallbackMethod="recipeFallBack")
+    @Bulkhead(name=RECIPE_SERVICE, fallbackMethod = "recipeBulkHeadFallback")
     @ApiOperation(value = "Get", notes = "Get specific recipe by id")
     public ResponseEntity<FullRecipeResponse> getRecipe(@PathVariable Long id) {
-//         fakeEndpointApiCall();
         return new ResponseEntity<>(recipeService.getRecipe(id), HttpStatus.OK);
     }
 
     @PostMapping()
     @CircuitBreaker(name=RECIPE_SERVICE, fallbackMethod="recipeFallBack")
+    @Bulkhead(name=RECIPE_SERVICE, fallbackMethod = "recipeBulkHeadFallback")
     @ApiOperation(value = "Add", notes = "Add new recipe")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<FullRecipeResponse> addRecipe(@Valid @RequestBody RecipeRequest recipe) {
-        // fakeEndpointApiCall();
         return new ResponseEntity<>(recipeService.addRecipe(recipe), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
     @CircuitBreaker(name=RECIPE_SERVICE, fallbackMethod="recipeFallBack")
+    @Bulkhead(name=RECIPE_SERVICE, fallbackMethod = "recipeBulkHeadFallback")
     @ApiOperation(value = "Update", notes = "Update recipe details and ingredient list")
     public ResponseEntity<FullRecipeResponse> updateRecipe(@PathVariable Long id, @Valid @RequestBody RecipeRequest recipe) {
-        // fakeEndpointApiCall();
         return new ResponseEntity<>(recipeService.updateRecipe(id, recipe), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     @CircuitBreaker(name=RECIPE_SERVICE, fallbackMethod="recipeFallBack")
+    @Bulkhead(name=RECIPE_SERVICE, fallbackMethod = "recipeBulkHeadFallback")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ApiOperation(value = "Delete", notes = "Delete recipe")
     public ResponseEntity<Long> deleteRecipe(@PathVariable Long id) {
-        // fakeEndpointApiCall();
         recipeService.deleteRecipe(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/{id}/addIngredient")
     @CircuitBreaker(name=RECIPE_SERVICE, fallbackMethod="recipeFallBack")
+    @Bulkhead(name=RECIPE_SERVICE, fallbackMethod = "recipeBulkHeadFallback")
     @ApiOperation(value = "AddIngredient", notes = "Add new ingredient with quantity to the recipe")
     public ResponseEntity<FullRecipeResponse> addIngredient(@PathVariable Long id, @Valid @RequestBody IngredientWithQuantity ingredientWithQuantity) {
-        // fakeEndpointApiCall();
         return new ResponseEntity<>(recipeService.addIngredientToRecipe(id, ingredientWithQuantity), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}/removeIngredient/{ingredientId}")
+    @CircuitBreaker(name=RECIPE_SERVICE, fallbackMethod="ingredientFallback")
+    @Bulkhead(name=RECIPE_SERVICE, fallbackMethod = "recipeBulkHeadFallback")
     @ApiOperation(value = "RemoveIngredient", notes = "Remove ingredient from recipe")
     public ResponseEntity<FullRecipeResponse> removeIngredient(@PathVariable Long id, @PathVariable Long ingredientId) {
-        // fakeEndpointApiCall();
         return new ResponseEntity<>(recipeService.removeIngredient(id, ingredientId), HttpStatus.OK);
     }
 
@@ -104,6 +109,9 @@ public class RecipeController {
     public ResponseEntity<String> recipeFallBack(Exception e){
         return new ResponseEntity<String>("Recipe Service is down!", HttpStatus.INTERNAL_SERVER_ERROR);
 
+    }
+    public ResponseEntity<String> recipeBulkHeadFallback(Exception e){
+        return new ResponseEntity<>("RecipeService is full and does not permit further calls!", HttpStatus.SERVICE_UNAVAILABLE);
     }
 
 }
