@@ -1,14 +1,21 @@
-
 resilience4j:
+  retry:
+    instances:
+      IngredientService:
+        maxRetryAttempts: 5
+        waitDuration: 5s
+      ServiceAddIngredient:
+        maxRetryAttempts: 7
+        waitDuration: 5s
   circuitbreaker:
     instances:
       IngredientService:
         registerHealthIndicator: true
-        eventConsumerBufferSize: 10
+        eventConsumerBufferSize: 3
         automaticTransitionFromOpenToHalfOpenEnabled: true
         failureRateThreshold: 50
-        minimumNumberOfCalls: 5
-        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 2
+        permittedNumberOfCallsInHalfOpenState: 5
         slidingWindowSize: 10
         waitDurationInOpenState: 5s
         slidingWindowType: COUNT_BASED
@@ -26,13 +33,14 @@ resilience4j:
     instances:
       IngredientService:
         maxWaitDuration: 5000
-        maxConcurrentCalls: 5
+        maxConcurrentCalls: 2
   thread-pool-bulkhead:
     instances:
       IngredientService:
         maxThreadPoolSize: 1
         coreThreadPoolSize: 1
         queueCapacity: 1
+
 
 management:
   health:
@@ -41,7 +49,4 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
-  endpoint:
-    health:
-      show-details: always
+        include: '*'
