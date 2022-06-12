@@ -8,13 +8,10 @@ import com.example.recipe.app.microservices.fault_tolerance.failures.PotentialFa
 import com.example.recipe.app.model.entity.Ingredient;
 import com.example.recipe.app.repository.IngredientRepository;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.Random;
 
 @Service
 public class IngredientService {
@@ -25,11 +22,13 @@ public class IngredientService {
 
     PotentialDelay potentialDelay = new NoDelay();
 
+    Random random = new Random();
+
     public void setPotentialDelay(PotentialDelay potentialDelay) {
         this.potentialDelay = potentialDelay;
     }
 
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss SSS");
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss:SSS");
 
     public IngredientService(IngredientRepository ingredientRepository) {
         this.ingredientRepository = ingredientRepository;
@@ -46,11 +45,39 @@ public class IngredientService {
         return ingredientRepository.findAll();
     }
 
+    public List<Ingredient> getIngredientsTakingRandomTime() {
+        long delay = random.nextInt(3000);
+        try {
+            System.out.println(delay);
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Getting ingredients taking random time within 3 secs...");
+
+        return ingredientRepository.findAll();
+    }
+
+
+
+
     public List<Ingredient> getIngredientsTimeoutError() {
         System.out.println("Get all ingredients in timeout Error function..."
                 + "current time = " + LocalDateTime.now().format(formatter) +
                 "; current thread = " + Thread.currentThread().getName());
         return Collections.emptyList();
+    }
+
+    public List<Ingredient> getIngredientsfromCache(){
+        List<Ingredient> ingredients = new ArrayList<>();
+        Ingredient ingredient = new Ingredient(1L,"water",null);
+        Ingredient ingredient1 = new Ingredient(2L, "lemon",null);
+        ingredients.add(ingredient);
+        ingredients.add(ingredient1);
+        System.out.println("Returning ingredients results from the cache...");
+        return ingredients;
+
     }
 
 
@@ -71,13 +98,31 @@ public class IngredientService {
         return ingredient.get();
     }
 
-    public Ingredient addIngredientThrowingException() throws Exception {
+    public Ingredient addIngredientThrowingException(String ingredientName) throws Exception {
         System.out.println("Adding ingredient... "
                 + "current time = " + LocalDateTime.now().format(formatter) +
                 "; current thread = " + Thread.currentThread().getName());
 
         throw new Exception("Exception when adding an ingredient...");
     }
+
+    public List<Ingredient> getIngredientsInOneSecond() {
+        // used for Bulkhead example
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Getting Ingredients; "
+                + "current time = " + LocalDateTime.now().format(formatter) +
+                "; current thread = " + Thread.currentThread().getName());
+
+
+        System.out.println("Getting Ingredients successful at " + LocalDateTime.now().format(formatter));
+        return ingredientRepository.findAll();
+    }
+
+
 
     public List<Ingredient> addIngredients(List<String> ingredientNames) {
         List<Ingredient> recipeIngredients = new ArrayList<>();

@@ -32,8 +32,8 @@ resilience4j:
   bulkhead:
     instances:
       IngredientService:
-        maxWaitDuration: 5000
-        maxConcurrentCalls: 2
+        maxWaitDuration: 500
+        maxConcurrentCalls: 5
   thread-pool-bulkhead:
     instances:
       IngredientService:
@@ -50,3 +50,4 @@ management:
     web:
       exposure:
         include: '*'
+

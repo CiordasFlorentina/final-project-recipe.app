@@ -13,7 +13,9 @@ import io.github.resilience4j.retry.annotation.Retry;
 //import io.micrometer.core.instrument.Meter;
 //import io.micrometer.core.instrument.MeterRegistry;
 //import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.swagger.models.auth.In;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.hibernate.dialect.identity.Ingres9IdentityColumnSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -21,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.swing.plaf.synth.SynthTextAreaUI;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -53,8 +56,8 @@ public class RetryingService {
     }
 
     @Retry(name = ADD_INGREDIENT_MICROSERVICE_PROPERTY, fallbackMethod = "retryAddIngredientFallback")
-    public Ingredient addIngredientThrowingException() throws Exception {
-        return ingredientService.addIngredientThrowingException();
+    public Ingredient addIngredientThrowingException(String ingredientName) throws Exception {
+        return ingredientService.addIngredientThrowingException(ingredientName);
     }
 
     public List<Ingredient> retryGetIngredientsFallback(Exception e) {
@@ -163,8 +166,8 @@ public class RetryingService {
         RetryRegistry retryRegistry = RetryRegistry.of(config);
         io.github.resilience4j.retry.Retry retry = retryRegistry.retry("IngredientService", config);
 
-//        MeterRegistry meterRegistry = new SimpleMeterRegistry();
-//        TaggedRetryMetrics.ofRetryRegistry(retryRegistry).bindTo(meterRegistry);
+        MeterRegistry meterRegistry = new SimpleMeterRegistry();
+        TaggedRetryMetrics.ofRetryRegistry(retryRegistry).bindTo(meterRegistry);
 
         Supplier<List<Ingredient>> ingredients = io.github.resilience4j.retry.Retry.decorateSupplier(retry, () -> ingredientService.getIngredients());
 
@@ -173,17 +176,17 @@ public class RetryingService {
             System.out.println(ingredients.get());
         }
 
-//        Consumer<Meter> meterConsumer = meter -> {
-//            String desc = meter.getId().getDescription();
-//            String metricName = meter.getId().getTag("kind");
-//            Double metricValue = StreamSupport.stream(meter.measure().spliterator(), false).
-//                    filter(m -> m.getStatistic().name().equals("COUNT")).
-//                    findFirst().
-//                    map(m -> m.getValue()).
-//                    orElse(0.0);
-//            System.out.println(desc + " - " + metricName + ": " + metricValue);
-//        };
-//        meterRegistry.forEachMeter(meterConsumer);
+        Consumer<Meter> meterConsumer = meter -> {
+            String desc = meter.getId().getDescription();
+            String metricName = meter.getId().getTag("kind");
+            Double metricValue = StreamSupport.stream(meter.measure().spliterator(), false).
+                    filter(m -> m.getStatistic().name().equals("COUNT")).
+                    findFirst().
+                    map(m -> m.getValue()).
+                    orElse(0.0);
+            System.out.println(desc + " - " + metricName + ": " + metricValue);
+        };
+        meterRegistry.forEachMeter(meterConsumer);
         return Collections.emptyList();
     }
 
