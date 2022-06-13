@@ -1,5 +1,6 @@
 package com.example.recipe.app.controller;
 
+import com.example.recipe.app.controller.RecipeController;
 import com.example.recipe.app.model.entity.Ingredient;
 import com.example.recipe.app.model.request.IngredientWithQuantity;
 import com.example.recipe.app.model.request.RecipeRequest;

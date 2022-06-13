@@ -1,5 +1,6 @@
 package com.example.recipe.app.controller;
 
+import com.example.recipe.app.controller.IngredientController;
 import com.example.recipe.app.exeption.NotFoundException;
 import com.example.recipe.app.model.entity.Ingredient;
 import com.example.recipe.app.model.request.IngredientRequest;

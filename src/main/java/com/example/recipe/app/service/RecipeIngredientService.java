@@ -17,13 +17,13 @@ public class RecipeIngredientService {
         this.recipeIngredientRepository = recipeIngredientRepository;
     }
 
-    void deleteRecipeAssociation(Recipe recipe, Ingredient ingredient) {
+    public void deleteRecipeAssociation(Recipe recipe, Ingredient ingredient) {
         RecipeIngredient association = recipeIngredientRepository.findRecipeIngredientByRecipeAndIngredient(recipe, ingredient)
                 .orElseThrow(() -> new NotFoundException("No ingredient with id " + ingredient.getId() + " found"));
         recipeIngredientRepository.delete(association);
     }
 
-    void deleteRecipeAssociations(List<RecipeIngredient> recipeIds) {
+    public void deleteRecipeAssociations(List<RecipeIngredient> recipeIds) {
         recipeIngredientRepository.deleteAllInBatch(recipeIds);
     }
 }

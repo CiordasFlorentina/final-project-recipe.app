@@ -4,6 +4,7 @@ import com.example.recipe.app.exeption.NotFoundException;
 import com.example.recipe.app.model.entity.User;
 import com.example.recipe.app.model.request.UserRequest;
 import com.example.recipe.app.repository.UserRepository;
+import com.example.recipe.app.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

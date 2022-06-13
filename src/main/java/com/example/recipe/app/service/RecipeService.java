@@ -7,6 +7,7 @@ import com.example.recipe.app.model.entity.RecipeIngredient;
 import com.example.recipe.app.model.request.IngredientWithQuantity;
 import com.example.recipe.app.model.request.RecipeRequest;
 import com.example.recipe.app.model.response.FullRecipeResponse;
+import com.example.recipe.app.model.response.RecipeResponse;
 import com.example.recipe.app.repository.RecipeRepository;
 import com.example.recipe.app.utils.Converter;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,10 @@ public class RecipeService {
 
     public List<FullRecipeResponse> getRecipes() {
         return recipeRepository.findAll().stream().map(Converter::mapToResponse).collect(Collectors.toList());
+    }
+
+    public List<RecipeResponse> getRecipesByIds(List<Long> ids) {
+        return recipeRepository.findByIdIn(ids).stream().map(Converter::mapToRecipeResponse).collect(Collectors.toList());
     }
 
     public Recipe getRecipeById(Long id) {

@@ -3,6 +3,7 @@ package com.example.recipe.app.service;
 import com.example.recipe.app.exeption.NotFoundException;
 import com.example.recipe.app.model.entity.Ingredient;
 import com.example.recipe.app.repository.IngredientRepository;
+import com.example.recipe.app.service.IngredientService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

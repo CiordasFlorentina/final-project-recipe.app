@@ -14,7 +14,7 @@ public class UserSettingService {
     private final UserSettingRepository userSettingRepository;
     private final UserService userService;
 
-    UserSettingService(UserSettingRepository userSettingRepository, UserService userService) {
+    public UserSettingService(UserSettingRepository userSettingRepository, UserService userService) {
         this.userSettingRepository = userSettingRepository;
         this.userService = userService;
     }

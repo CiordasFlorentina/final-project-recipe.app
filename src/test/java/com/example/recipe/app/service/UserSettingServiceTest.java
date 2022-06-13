@@ -10,6 +10,8 @@ import com.example.recipe.app.model.entity.UserSetting;
 import com.example.recipe.app.model.request.UserSettingRequest;
 import com.example.recipe.app.model.response.UserSettingResponse;
 import com.example.recipe.app.repository.UserSettingRepository;
+import com.example.recipe.app.service.UserService;
+import com.example.recipe.app.service.UserSettingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

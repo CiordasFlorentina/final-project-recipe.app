@@ -23,6 +23,12 @@ public class GlobalExceptionHandler {
         return new ApiError(e.getMessage(), HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.getReasonPhrase());
     }
 
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(ServerException.class)
+    public ApiError serverException(ServerException e) {
+        return new ApiError(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE.value(), HttpStatus.SERVICE_UNAVAILABLE.getReasonPhrase());
+    }
+
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -62,6 +68,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ElementPresentException.class)
     public ApiError elementPresentException(ElementPresentException e) {
         return new ApiError(e.getMessage() + " already present", HttpStatus.BAD_REQUEST.value());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(BadRequest.class)
+    public ApiError badRequest(BadRequest e) {
+        return new ApiError(e.getMessage(), HttpStatus.BAD_REQUEST.value());
     }
 
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)

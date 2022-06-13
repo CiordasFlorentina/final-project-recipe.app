@@ -5,6 +5,7 @@ import com.example.recipe.app.model.entity.Ingredient;
 import com.example.recipe.app.model.entity.Recipe;
 import com.example.recipe.app.model.entity.RecipeIngredient;
 import com.example.recipe.app.repository.RecipeIngredientRepository;
+import com.example.recipe.app.service.RecipeIngredientService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

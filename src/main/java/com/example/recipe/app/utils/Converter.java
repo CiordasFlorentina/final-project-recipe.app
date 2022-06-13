@@ -1,11 +1,10 @@
 package com.example.recipe.app.utils;
 
-import com.example.recipe.app.model.entity.Bookmark;
 import com.example.recipe.app.model.entity.Recipe;
 import com.example.recipe.app.model.entity.UserSetting;
-import com.example.recipe.app.model.response.BookmarkResponse;
 import com.example.recipe.app.model.response.FullRecipeResponse;
 import com.example.recipe.app.model.response.RecipeIngredientResponse;
+import com.example.recipe.app.model.response.RecipeResponse;
 import com.example.recipe.app.model.response.UserSettingResponse;
 
 import java.util.stream.Collectors;
@@ -24,12 +23,10 @@ public class Converter {
                 .build();
     }
 
-    public static BookmarkResponse mapToResponse(Bookmark bookmark) {
-        return BookmarkResponse.builder()
-                .id(bookmark.getId())
-                .timestamp(bookmark.getTimestamp().toString())
-                .userId(bookmark.getUser().getId())
-                .recipeId(bookmark.getRecipe().getId())
+    public static RecipeResponse mapToRecipeResponse(Recipe recipe) {
+        return RecipeResponse.builder()
+                .id(recipe.getId())
+                .name(recipe.getName())
                 .build();
     }
 

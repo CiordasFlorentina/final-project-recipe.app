@@ -3,8 +3,8 @@ package com.example.recipe.app.controller;
 import com.example.recipe.app.model.entity.Ingredient;
 import com.example.recipe.app.model.request.IngredientRequest;
 import com.example.recipe.app.service.IngredientService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/ingredient")
-@Api(tags = "Ingredient")
+@Tag(name = "Ingredient")
 public class IngredientController {
 
     private final IngredientService ingredientService;
@@ -23,13 +23,13 @@ public class IngredientController {
     }
 
     @GetMapping()
-    @ApiOperation(value = "GetAll", notes = "Get all ingredients")
+    @Operation(method = "GetAll", description = "Get all ingredients")
     public List<Ingredient> getIngredients() {
         return ingredientService.getIngredients();
     }
 
     @GetMapping("/{id}")
-    @ApiOperation(value = "Get", notes = "Get specific ingredient by id")
+    @Operation(method = "Get", description = "Get specific ingredient by id")
     public Ingredient getIngredient(@PathVariable Long id) {
         return ingredientService.getIngredient(id);
     }
@@ -37,8 +37,8 @@ public class IngredientController {
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    @ApiOperation(value = "Add", notes = "Add new ingredient")
-    public Ingredient addIngredient(@Valid @RequestBody IngredientRequest ingredient) {
+    @Operation(method = "Add", description = "Add new ingredient")
+    public Ingredient addIngredient(@RequestBody @Valid IngredientRequest ingredient) {
         return ingredientService.addIngredient(ingredient.getName());
     }
 

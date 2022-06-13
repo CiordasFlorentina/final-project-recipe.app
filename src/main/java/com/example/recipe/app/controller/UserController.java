@@ -3,8 +3,8 @@ package com.example.recipe.app.controller;
 import com.example.recipe.app.model.entity.User;
 import com.example.recipe.app.model.request.UserRequest;
 import com.example.recipe.app.service.UserService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/user")
-@Api(tags = "User")
+@Tag(name = "User")
 public class UserController {
     private final UserService userService;
 
@@ -22,26 +22,26 @@ public class UserController {
     }
 
     @GetMapping()
-    @ApiOperation(value = "GetAll", notes = "Get all users")
+    @Operation(method = "GetAll", description = "Get all users")
     public List<User> getUsers() {
         return userService.getUsers();
     }
 
     @GetMapping("/{id}")
-    @ApiOperation(value = "Get", notes = "Get user by id")
+    @Operation(method = "Get", description = "Get user by id")
     public User getUser(@PathVariable Long id) {
         return userService.getUser(id);
     }
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    @ApiOperation(value = "Add", notes = "Add new user")
+    @Operation(method = "Add", description = "Add new user")
     public User addUser(@Valid @RequestBody UserRequest user) {
         return userService.addUser(user);
     }
 
     @PutMapping("/{id}")
-    @ApiOperation(value = "Update", notes = "Update user details")
+    @Operation(method = "Update", description = "Update user details")
     public User updateUser(@PathVariable Long id, @Valid @RequestBody UserRequest user) {
         return userService.updateUser(id, user);
     }

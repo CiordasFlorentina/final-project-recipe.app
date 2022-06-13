@@ -1,5 +1,6 @@
 package com.example.recipe.app.controller;
 
+import com.example.recipe.app.controller.UserController;
 import com.example.recipe.app.model.entity.User;
 import com.example.recipe.app.model.request.UserRequest;
 import com.example.recipe.app.service.UserService;

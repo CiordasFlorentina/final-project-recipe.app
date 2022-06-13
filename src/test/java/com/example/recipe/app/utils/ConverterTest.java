@@ -4,12 +4,10 @@ import com.example.recipe.app.model.SettingsConfig.Language;
 import com.example.recipe.app.model.SettingsConfig.UnitOfMeasure;
 import com.example.recipe.app.model.SettingsConfig.UnitOfTemperature;
 import com.example.recipe.app.model.entity.*;
-import com.example.recipe.app.model.response.BookmarkResponse;
 import com.example.recipe.app.model.response.FullRecipeResponse;
 import com.example.recipe.app.model.response.UserSettingResponse;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,18 +32,6 @@ class ConverterTest {
         assertEquals("recipe 1", fullRecipeResponse.getName());
         assertEquals("1 gram", fullRecipeResponse.getIngredients().get(0).getQuantity());
         assertEquals("ing 1", fullRecipeResponse.getIngredients().get(0).getIngredient().getName());
-    }
-
-    @Test
-    void mapToResponseBookmark() {
-        LocalDateTime now = LocalDateTime.now();
-        final Bookmark bookmark = Bookmark.builder().id(1L).recipe(recipe).user(user).timestamp(now).build();
-        BookmarkResponse fullRecipeResponse = Converter.mapToResponse(bookmark);
-
-        assertEquals(1L, fullRecipeResponse.getId());
-        assertEquals(1L, fullRecipeResponse.getRecipeId());
-        assertEquals(1L, fullRecipeResponse.getUserId());
-        assertEquals(now.toString(), fullRecipeResponse.getTimestamp());
     }
 
     @Test

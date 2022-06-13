@@ -1,83 +1,46 @@
 package com.example.recipe.app.service;
 
-import com.example.recipe.app.exeption.ElementPresentException;
-import com.example.recipe.app.model.entity.Bookmark;
-import com.example.recipe.app.model.entity.Recipe;
-import com.example.recipe.app.model.entity.User;
-import com.example.recipe.app.model.request.BookmarkByDateRequest;
-import com.example.recipe.app.model.request.BookmarkRequest;
-import com.example.recipe.app.model.response.BookmarkResponse;
+import com.example.recipe.app.client.BookmarkClient;
+import com.example.recipe.app.exeption.BadRequest;
+import com.example.recipe.app.exeption.NotFoundException;
+import com.example.recipe.app.exeption.ServerException;
 import com.example.recipe.app.model.response.RecipeResponse;
 import com.example.recipe.app.model.response.UserBookmarksResponse;
-import com.example.recipe.app.repository.BookmarkRepository;
-import com.example.recipe.app.utils.Converter;
+import feign.FeignException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class BookmarkService {
-    private final BookmarkRepository bookmarkRepository;
+    private final BookmarkClient bookmarkClient;
     private final RecipeService recipeService;
-    private final UserService userService;
 
-    BookmarkService(BookmarkRepository bookmarkRepository, RecipeService recipeService, UserService userService) {
-        this.bookmarkRepository = bookmarkRepository;
+    public BookmarkService(BookmarkClient bookmarkClient, RecipeService recipeService) {
+        this.bookmarkClient = bookmarkClient;
         this.recipeService = recipeService;
-        this.userService = userService;
     }
 
-    public List<BookmarkResponse> getBookmarksByUserId(Long userId) {
-        return bookmarkRepository.findAllByUserId(userId)
-                .stream()
-                .map(Converter::mapToResponse)
-                .collect(Collectors.toList());
+    public UserBookmarksResponse getUserBookmark(Long userId, String fromDate, String toDate) {
+        List<Long> bookmarks = retrieveBookmarks(userId, fromDate, toDate);
+        List<RecipeResponse> recipes = recipeService.getRecipesByIds(bookmarks);
+        return UserBookmarksResponse.builder().userId(userId).recipes(recipes).build();
     }
 
-    public UserBookmarksResponse getBookmarksDetailsByUserId(Long userId) {
-        return UserBookmarksResponse.builder().userId(userId).recipes(
-                bookmarkRepository.findAllByUserId(userId)
-                        .stream()
-                        .map(bookmark -> RecipeResponse.builder()
-                                .id(bookmark.getRecipe().getId())
-                                .name(bookmark.getRecipe().getName())
-                                .build()
-                        ).collect(Collectors.toList())
-        ).build();
-    }
+    Logger log = LoggerFactory.getLogger(BookmarkService.class);
 
-    public BookmarkResponse addBookmark(BookmarkRequest bookmarkReq) {
-        User user = userService.getUser(bookmarkReq.getUserId());
-        Recipe recipe = recipeService.getRecipeById(bookmarkReq.getRecipeId());
-
-        if (bookmarkRepository.findByUserAndRecipe(user, recipe).isPresent()) {
-            throw new ElementPresentException("Bookmark");
+    public List<Long> retrieveBookmarks(Long userId, String fromDate, String toDate) {
+        log.info("Request to bookmark for userId {}", userId);
+        try {
+            return bookmarkClient.getBookmarks(userId, fromDate, toDate);
+        } catch (FeignException.FeignClientException.NotFound exception) {
+            throw new NotFoundException("Bookmarks not found for userId " + userId);
+        } catch (FeignException.FeignServerException e) {
+            throw new ServerException("Cannot reach bookmark service");
+        } catch (FeignException.FeignClientException exception) {
+            throw new BadRequest("Bad request");
         }
-        return Converter.mapToResponse(
-                bookmarkRepository.save(
-                        Bookmark.builder().user(user).timestamp(LocalDateTime.now()).recipe(recipe).build()
-                )
-        );
-    }
-
-    @Transactional
-    public void deleteBookmarks(Long userId) {
-        bookmarkRepository.deleteAllByUserId(userId);
-    }
-
-    @Transactional
-    public void deleteBookmark(Long userId, Long bookmarkId) {
-        bookmarkRepository.deleteBookmarkByUserIdAndId(userId, bookmarkId);
-    }
-
-    public List<BookmarkResponse> getUserBookmarksByDate(Long userId, BookmarkByDateRequest bookmarkByDateRequest) {
-        LocalDateTime fromDate = LocalDateTime.parse(bookmarkByDateRequest.getFromDate());
-        LocalDateTime toDate = LocalDateTime.parse(bookmarkByDateRequest.getToDate());
-        return bookmarkRepository.findAllByUserIdAndTimestampBetween(
-                userId, fromDate, toDate
-        ).stream().map(Converter::mapToResponse).collect(Collectors.toList());
     }
 }

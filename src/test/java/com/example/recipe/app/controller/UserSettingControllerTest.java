@@ -1,5 +1,6 @@
 package com.example.recipe.app.controller;
 
+import com.example.recipe.app.controller.UserSettingController;
 import com.example.recipe.app.model.SettingsConfig.Language;
 import com.example.recipe.app.model.SettingsConfig.UnitOfMeasure;
 import com.example.recipe.app.model.SettingsConfig.UnitOfTemperature;
