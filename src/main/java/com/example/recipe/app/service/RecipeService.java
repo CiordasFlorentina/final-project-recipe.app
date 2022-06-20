@@ -45,12 +45,10 @@ public class RecipeService {
 
     public RecipeService(
             RecipeRepository recipeRepository,
-            IngredientService ingredientService,
-            com.example.recipe.app.service.IngredientService ingredientService1, RecipeIngredientService recipeIngredientService
+            IngredientService ingredientService, RecipeIngredientService recipeIngredientService
     ) {
         this.recipeRepository = recipeRepository;
-        this.ingredientService = ingredientService1;
-//        this.ingredientService = ingredientService;
+        this.ingredientService = ingredientService;
         this.recipeIngredientService = recipeIngredientService;
     }
 
