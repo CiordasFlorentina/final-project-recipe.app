@@ -1,0 +1,23 @@
+spring:
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lab:
+            non_contextual_creation: true
+    hibernate:
+      ddl-auto: update
+  datasource:
+    username: postgres
+    password: =A>6hK9fy@S@Hxjc
+  cloud:
+    gcp:
+      project-id: lucid-forklift-353013
+      sql:
+        enabled: true
+        database-name: recipeapp
+        instance-connection-name: "lucid-forklift-353013:us-central1:bookmarkapp"
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}

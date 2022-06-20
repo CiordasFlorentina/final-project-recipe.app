@@ -1,9 +1,0 @@
-version: '3.1'
-services:
-  licenta-db:
-    container_name: db.recipe.app
-    domainname: db.recipe.app
-    image: postgres
-    env_file: .env
-    ports:
-      - '2020:5432'
