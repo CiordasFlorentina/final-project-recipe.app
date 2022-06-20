@@ -9,9 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+
+
 @Service
 public class IngredientService {
-
     private final IngredientRepository ingredientRepository;
 
     public IngredientService(IngredientRepository ingredientRepository) {
@@ -28,6 +29,7 @@ public class IngredientService {
     }
 
     public Ingredient addIngredient(String ingredientName) {
+
         Optional<Ingredient> ingredient = ingredientRepository.findByName(ingredientName);
         if (ingredient.isEmpty()) {
             return ingredientRepository.save(Ingredient.builder().name(ingredientName).build());

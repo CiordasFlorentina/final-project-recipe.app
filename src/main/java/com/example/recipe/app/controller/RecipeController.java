@@ -1,11 +1,15 @@
 package com.example.recipe.app.controller;
 
+import com.example.recipe.app.model.entity.Recipe;
 import com.example.recipe.app.model.request.IngredientWithQuantity;
 import com.example.recipe.app.model.request.RecipeRequest;
 import com.example.recipe.app.model.response.FullRecipeResponse;
+import com.example.recipe.app.service.BookmarkService;
 import com.example.recipe.app.service.RecipeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

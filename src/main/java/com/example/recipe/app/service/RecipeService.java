@@ -10,9 +10,16 @@ import com.example.recipe.app.model.response.FullRecipeResponse;
 import com.example.recipe.app.model.response.RecipeResponse;
 import com.example.recipe.app.repository.RecipeRepository;
 import com.example.recipe.app.utils.Converter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuitBreakerFactory;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.transaction.Transactional;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,17 +27,30 @@ import java.util.stream.Collectors;
 
 @Service
 public class RecipeService {
+
+    @Autowired
+    private Resilience4JCircuitBreakerFactory resilience4JCircuitBreakerFactory;
+
+    private final RestTemplate restTemplate = new RestTemplate(); // Used for calling external Ingredient Service
+
+    Logger log = LoggerFactory.getLogger(RecipeService.class);
+
     private final RecipeRepository recipeRepository;
-    private final IngredientService ingredientService;
+    private final IngredientService ingredientService; //Using IngredientService as External MicroService w/ CircuitBreaker & restTemplate
     private final RecipeIngredientService recipeIngredientService;
+
+    private final String INGREDIENT_SERVER_PORT = "8090";
+    private final String FAKE_INGREDIENT_SERVER_PORT = "8089";
+    private final String INGREDIENT_SERVICE_API_BASE_URL = "http://localhost:" + INGREDIENT_SERVER_PORT + "/ingredient";
 
     public RecipeService(
             RecipeRepository recipeRepository,
             IngredientService ingredientService,
-            RecipeIngredientService recipeIngredientService
+            com.example.recipe.app.service.IngredientService ingredientService1, RecipeIngredientService recipeIngredientService
     ) {
         this.recipeRepository = recipeRepository;
-        this.ingredientService = ingredientService;
+        this.ingredientService = ingredientService1;
+//        this.ingredientService = ingredientService;
         this.recipeIngredientService = recipeIngredientService;
     }
 
@@ -74,8 +94,10 @@ public class RecipeService {
 
     public FullRecipeResponse addIngredientToRecipe(Long recipeId, IngredientWithQuantity ingredientWithQuantity) {
         Recipe recipe = getRecipeById(recipeId);
+        CircuitBreaker circuitBreaker = resilience4JCircuitBreakerFactory.create("circuitBreakerCustom");
 
-        Ingredient ingredient = ingredientService.addIngredient(ingredientWithQuantity.getName());
+        Ingredient ingredient = circuitBreaker.run(() -> restTemplate.postForObject(FAKE_INGREDIENT_SERVER_PORT, ingredientWithQuantity.getName(), Ingredient.class), throwable -> ingredientServiceError());
+//        Ingredient ingredient = ingredientService.addIngredient(ingredientWithQuantity.getName());
         RecipeIngredient recipeIngredient = RecipeIngredient.builder()
                 .recipe(recipe)
                 .ingredient(ingredient)
@@ -89,7 +111,11 @@ public class RecipeService {
     @Transactional
     public FullRecipeResponse removeIngredient(Long recipeId, Long ingredientId) {
         Recipe recipe = getRecipeById(recipeId);
-        Ingredient ingredient = ingredientService.getIngredient(ingredientId);
+        CircuitBreaker circuitBreaker = resilience4JCircuitBreakerFactory.create("circuitBreaker");
+        final String INGREDIENT_ID_URL = INGREDIENT_SERVICE_API_BASE_URL + "/" + ingredientId.toString();
+        Ingredient ingredient =  circuitBreaker.run(() -> restTemplate.getForObject(INGREDIENT_ID_URL, Ingredient.class), throwable -> ingredientServiceError());
+
+//        Ingredient ingredient = ingredientService.getIngredient(ingredientId);
 
         recipeIngredientService.deleteRecipeAssociation(recipe, ingredient);
         recipe.getRecipeIngredients().removeIf((RecipeIngredient elm) -> elm.getIngredient().getId().equals(ingredientId));
@@ -97,7 +123,14 @@ public class RecipeService {
         return Converter.mapToResponse(recipeRepository.save(recipe));
     }
 
+    private Ingredient ingredientServiceError() {
+        System.out.println("Ingredient Service is down");
+        log.error("Ingredient Service is down");
+        return null;
+    }
+
     private List<RecipeIngredient> getRecipeIngredients(RecipeRequest recipe, Recipe newRecipe) {
+
         List<RecipeIngredient> recipeIngredients = new ArrayList<>();
 
         if (recipe.getIngredientsWithQuantity() == null) {
@@ -127,5 +160,4 @@ public class RecipeService {
 
         return recipeIngredients;
     }
-
 }
