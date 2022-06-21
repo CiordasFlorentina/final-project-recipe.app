@@ -9,14 +9,14 @@ spring:
       ddl-auto: update
   datasource:
     username: postgres
-    password: =A>6hK9fy@S@Hxjc
+    password: -R[D+d)<6HKQ)_\T
   cloud:
     gcp:
-      project-id: lucid-forklift-353013
+      project-id: recipe-app-354019
       sql:
         enabled: true
         database-name: recipeapp
-        instance-connection-name: "lucid-forklift-353013:us-central1:bookmarkapp"
+        instance-connection-name: recipe-app-354019:us-central1:recipe-app-db
 eureka:
   client:
     serviceUrl:
